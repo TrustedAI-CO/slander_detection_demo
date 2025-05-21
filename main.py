@@ -23,7 +23,7 @@ st.markdown("""
 このツールはテキストを分析し、潜在的な誹謗中傷の可能性を詳細に評価します。\n
 現状はTwitterとYouTubeのみの検索に対応しています。\n
 問い合わせ先：tran-thien@trusted-ai.co \n
-開発会社のホームページ：https://trusted-ai.co.jp/
+開発会社のホームページ：https://trusted-ai.co/
 """)
 
 # Create input section
