@@ -15,53 +15,55 @@ youtube_tool = YouTubeTool()
 query_generator = QueryGenerator()
 
 # Set page config
-st.set_page_config(page_title="Slander Detector", page_icon="🔍", layout="wide")
+st.set_page_config(page_title="誹謗中傷検出ツール", page_icon="🔍", layout="wide")
 
 # App title and description
-st.title("🔍 Slander Detector")
+st.title("🔍 誹謗中傷検出ツール")
 st.markdown("""
-This tool analyzes text for potential slanderous statements and provides a detailed assessment.
+このツールはテキストを分析し、潜在的な誹謗中傷の可能性を詳細に評価します。
+問い合わせ先：tran-thien@trusted-ai.co
+開発会社のホームページ：https://trusted-ai.co.jp/
 """)
 
 # Create input section
-st.subheader("Search Configuration")
+st.subheader("検索設定")
 
 # Input fields
 natural_language_input = st.text_area(
-    "Describe what you want to search for",
-    placeholder="Enter a natural language description of what you want to search for (e.g., 'Find information about allegations of financial misconduct by a tech company CEO')",
+    "検索したい内容を説明してください",
+    placeholder="検索したい内容を自然言語で入力してください（例：「テクノロジー企業のCEOによる財務不正行為に関する情報を探す」）",
     height=100,
 )
 
 target_person_analysis = st.text_input(
-    "Target Person (optional)",
-    placeholder="Name of the person being discussed",
+    "対象人物（任意）",
+    placeholder="議論の対象となる人物の名前",
     key="target_person_analysis",
 )
 
 # Add Start Analysis button
-if st.button("Start Analysis", type="primary"):
+if st.button("分析開始", type="primary"):
     if natural_language_input:
         try:
             # Generate queries using LLM
-            with st.spinner("Generating search queries..."):
+            with st.spinner("検索クエリを生成中..."):
                 search_requests = query_generator.generate_queries(
                     natural_language_input
                 )
 
                 if not search_requests.twitter and not search_requests.youtube:
                     st.warning(
-                        "No search queries could be generated. Please try rephrasing your input."
+                        "検索クエリを生成できませんでした。入力内容を言い換えてみてください。"
                     )
                 else:
                     st.session_state.search_requests = search_requests
-                    st.success("Search queries generated successfully!")
+                    st.success("検索クエリが正常に生成されました！")
 
                     # Always clear previous results
                     st.session_state.search_results = []
 
                     # Display Twitter queries
-                    st.subheader("Generated Search Requests")
+                    st.subheader("生成された検索リクエスト")
                     # # Display YouTube queries
                     # for i, query in enumerate(search_requests.youtube, 1):
                     #     with st.expander(f"[YouTube] {query.query}"):
@@ -73,17 +75,17 @@ if st.button("Start Analysis", type="primary"):
                     for i, query in enumerate(search_requests.twitter, 1):
                         with st.expander(f"[Twitter] {query.query}"):
                             st.markdown(f"""
-                            **Description:**  
+                            **説明:**  
                             {query.description}  
                             
-                            **Parameters:**
-                            - Section: {query.section or "Not specified"}
-                            - Language: {query.language or "Not specified"}
-                            - Date Range: {query.start_date or "Not specified"} to {query.end_date or "Not specified"}
+                            **パラメータ:**
+                            - セクション: {query.section or "指定なし"}
+                            - 言語: {query.language or "指定なし"}
+                            - 日付範囲: {query.start_date or "指定なし"} から {query.end_date or "指定なし"}
                             """)
 
                     # Retrieve search results
-                    with st.spinner("Retrieving search results..."):
+                    with st.spinner("検索結果を取得中..."):
                         # # YouTube
                         # for query in search_requests.youtube:
                         #     try:
@@ -110,7 +112,7 @@ if st.button("Start Analysis", type="primary"):
                             try:
                                 results = twitter_tool.search_tweets(query=query.query)
                                 if not results:
-                                    st.info(f"No Twitter results for: {query.query}")
+                                    st.info(f"「{query.query}」の検索結果はありませんでした")
                                 for result in results:
                                     st.session_state.search_results.append(
                                         {
@@ -119,54 +121,54 @@ if st.button("Start Analysis", type="primary"):
                                             "author": result.user.username,
                                             "text": result.text,
                                             "date": result.creation_date,
-                                            "engagement": f"{result.favorite_count} likes, {result.retweet_count} retweets",
+                                            "engagement": f"{result.favorite_count} いいね, {result.retweet_count} リツイート",
                                             "tweet_id": result.tweet_id,
                                         }
                                     )
                             except Exception as e:
-                                st.error(f"Error searching Twitter: {str(e)}")
+                                st.error(f"Twitter検索中にエラーが発生しました: {str(e)}")
 
-                    st.success("Search complete!")
+                    st.success("検索が完了しました！")
 
                     # Display results
-                    st.subheader("Search Results")
+                    st.subheader("検索結果")
                     if not st.session_state.search_results:
-                        st.info("No search results found.")
+                        st.info("検索結果が見つかりませんでした。")
                     for i, result in enumerate(st.session_state.search_results, 1):
                         with st.expander(
                             f"[No.{i}] [{result['source']}] {result['title']}"
                         ):
                             st.markdown(f"""
-                            **Source:** {result["source"]}  
-                            **Channel/Author:** {result["author"]}  
-                            **Published:** {result["date"]}  
-                            **Description/Text:** {result["text"]}
+                            **ソース:** {result["source"]}  
+                            **アカウント/著者:** {result["author"]}  
+                            **投稿日時:** {result["date"]}  
+                            **内容:** {result["text"]}
                             """)
 
                             # Add a button to view comments for YouTube
                             if result["source"] == "YouTube":
-                                if st.button("View Comments", key=f"comments_{i}"):
-                                    with st.spinner("Loading comments..."):
+                                if st.button("コメントを表示", key=f"comments_{i}"):
+                                    with st.spinner("コメントを読み込み中..."):
                                         comments = youtube_tool.get_video_comments(
                                             result["video_id"]
                                         )
                                         if comments:
-                                            st.markdown("### Comments")
+                                            st.markdown("### コメント")
                                             for comment in comments:
                                                 st.markdown(f"""
                                                 **{comment["author"]}** ({comment["published_at"]})  
                                                 {comment["text"]}  
-                                                Likes: {comment["like_count"]}
+                                                いいね数: {comment["like_count"]}
                                                 ---
                                                 """)
                                         else:
                                             st.info(
-                                                "No comments found or comments are disabled for this video."
+                                                "コメントが見つからないか、この動画ではコメントが無効になっています。"
                                             )
 
                     # Automatically start analysis
                     if st.session_state.search_results:
-                        with st.spinner("Analyzing content..."):
+                        with st.spinner("コンテンツを分析中..."):
                             try:
                                 slander_analyzer = SlanderAnalyzer()
                                 # Use the new batch analysis method
@@ -200,12 +202,12 @@ if st.button("Start Analysis", type="primary"):
 
                                 # Store overall analysis
                                 st.session_state.overall_analysis = overall_analysis
-                                st.success("Analysis complete!")
+                                st.success("分析が完了しました！")
 
                                 # Display analysis results
                                 col1, col2 = st.columns([1, 1])
                                 with col1:
-                                    st.subheader("Overall Analysis")
+                                    st.subheader("全体分析")
                                     overall = st.session_state.overall_analysis
                                     # Overall risk score
                                     risk_color = (
@@ -218,32 +220,32 @@ if st.button("Start Analysis", type="primary"):
                                     st.markdown(
                                         f"""
                                         <div style='text-align: center; padding: 20px; background-color: {risk_color}20; border-radius: 10px;'>
-                                            <h2 style='color: {risk_color};'>Overall Risk Score: {overall.combined_risk_score:.1%}</h2>
+                                            <h2 style='color: {risk_color};'>総合リスクスコア: {overall.combined_risk_score:.1%}</h2>
                                         </div>
                                         """,
                                         unsafe_allow_html=True,
                                     )
 
-                                    st.markdown("### Pattern Analysis")
+                                    st.markdown("### パターン分析")
                                     st.markdown(overall.pattern_analysis)
 
-                                    st.markdown("### Cross-References")
+                                    st.markdown("### 相互参照")
                                     st.markdown(overall.cross_references)
 
                                 with col2:
-                                    st.subheader("Individual Results")
+                                    st.subheader("個別結果")
                                     for i, result in enumerate(
                                         st.session_state.all_results, 1
                                     ):
                                         with st.expander(
-                                            f"Result {i}: {result['source']} - {result['author']}"
+                                            f"結果 {i}: {result['source']} - {result['author']}"
                                         ):
                                             st.markdown(f"""
-                                            **Source:** {result["source"]}  
-                                            **Author:** {result["author"]}  
-                                            **Date:** {result["date"]}  
-                                            **Engagement:** {result["engagement"]}  
-                                            **Text:** {result["text"]}
+                                            **ソース:** {result["source"]}  
+                                            **投稿者:** {result["author"]}  
+                                            **日付:** {result["date"]}  
+                                            **エンゲージメント:** {result["engagement"]}  
+                                            **テキスト:** {result["text"]}
                                             """)
 
                                             analysis = result["analysis"]
@@ -259,8 +261,8 @@ if st.button("Start Analysis", type="primary"):
                                             st.markdown(
                                                 f"""
                                                 <div style='padding: 10px; background-color: {risk_color}20; border-radius: 5px;'>
-                                                    <p style='color: {risk_color};'><strong>Risk Score:</strong> {analysis.risk_score:.1%}</p>
-                                                    <p><strong>Confidence:</strong> {analysis.confidence_score:.1%}</p>
+                                                    <p style='color: {risk_color};'><strong>リスクスコア:</strong> {analysis.risk_score:.1%}</p>
+                                                    <p><strong>信頼度:</strong> {analysis.confidence_score:.1%}</p>
                                                 </div>
                                                 """,
                                                 unsafe_allow_html=True,
@@ -268,15 +270,15 @@ if st.button("Start Analysis", type="primary"):
 
                                             # Context Analysis
                                             if hasattr(analysis, "context_analysis"):
-                                                st.markdown("**Context Analysis:**")
+                                                st.markdown("**コンテキスト分析:**")
                                                 st.markdown(analysis.context_analysis)
 
                             except Exception as e:
-                                st.error(f"An error occurred during analysis: {str(e)}")
+                                st.error(f"分析中にエラーが発生しました: {str(e)}")
                     else:
-                        st.warning("No results to analyze.")
+                        st.warning("分析する結果がありません。")
 
         except Exception as e:
-            st.error(f"Error during analysis: {str(e)}")
+            st.error(f"分析中にエラーが発生しました: {str(e)}")
     else:
-        st.warning("Please enter a search description to begin analysis.")
+        st.warning("分析を開始するには検索内容を入力してください。")
