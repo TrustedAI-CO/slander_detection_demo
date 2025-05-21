@@ -32,8 +32,6 @@ class Tweet(BaseModel):
     reply_count: int
     quote_count: int
     views: Optional[int] = None
-    media_url: Optional[List[str]] = None
-    video_url: Optional[str] = None
     language: Optional[str] = None
 
 
@@ -133,8 +131,6 @@ class TwitterTool:
             reply_count=tweet_data.get("reply_count", 0),
             quote_count=tweet_data.get("quote_count", 0),
             views=tweet_data.get("views"),
-            media_url=tweet_data.get("media_url"),
-            video_url=tweet_data.get("video_url"),
             language=tweet_data.get("language"),
         )
 
@@ -142,13 +138,11 @@ class TwitterTool:
         self,
         query: str,
         section: Optional[str] = None,
-        min_retweets: Optional[int] = 1,
-        min_likes: Optional[int] = 1,
-        min_replies: Optional[int] = 0,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         language: Optional[str] = None,
         continuation_token: Optional[str] = None,
+        limit: Optional[int] = 20,
     ) -> List[Tweet]:
         """
         Search for tweets related to the query with advanced filtering options.
@@ -176,10 +170,7 @@ class TwitterTool:
             search_params = TwitterSearchParams(
                 query=query,
                 section=section,
-                min_retweets=min_retweets,
-                min_likes=min_likes,
-                min_replies=min_replies,
-                limit=5,  # Always use 20 results
+                limit=limit,
                 start_date=start_date,
                 end_date=end_date,
                 language=language,
